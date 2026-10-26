@@ -15,6 +15,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    outputs:
+      pages_ready: ${{ steps.pages.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,46 +32,53 @@ jobs:
           repository: bartimoussmith-oss/civic-newsroom-data-001
           path: source-data
           persist-credentials: false
-      - name: Wait for the separately approved dataset publication
-        run: |
-          for attempt in $(seq 1 60); do
-            if test -f source-data/published.json; then exit 0; fi
-            sleep 15
-            git -C source-data fetch --depth 1 origin main
-            git -C source-data checkout --detach FETCH_HEAD
-          done
-          echo 'Dataset publication is not ready; refusing placeholder deployment'
-          exit 1
-      - name: Validate browser code and build real issue memberships
+      - name: Require published dataset
+        run: test -f source-data/published.json
+      - name: Validate code and build complete static archive
         run: |
           node --check web/app.js
-          python -m py_compile app/build_site.py
-          python app/build_site.py --dataset-repo source-data --out _site --revision "$GITHUB_SHA"
+          node --check web/intelligence-tools.js
+          python -m py_compile app/build_site.py app/search_pages.py app/build_release.py
+          python app/build_release.py --dataset-repo source-data --out _site --revision "$GITHUB_SHA"
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Test complete real-record and media-export workflow
+      - name: Verify interactive media export and static record text
         run: |
           python -m http.server 8765 --directory _site > /tmp/newsroom-http.log 2>&1 &
           node app/browser-smoke.cjs > browser-result.json
-          cat browser-result.json
+          node app/static-smoke.cjs > static-result.json
+          cat browser-result.json static-result.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: newsroom-browser-verification-${{ github.sha }}
+          name: newsroom-verification-${{ github.sha }}
           path: |
             browser-result.json
+            static-result.json
             _site/data/boot.json
+            _site/data/search-readiness.json
           retention-days: 7
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+      - name: Inspect Pages setup without attempting privileged enablement
+        id: pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try{
+              await github.rest.repos.getPages({owner:'bartimoussmith-oss',repo:'civic-newsroom'});
+              core.setOutput('ready','true');
+            }catch(e){
+              if(e.status!==403&&e.status!==404)throw e;
+              core.setOutput('ready','false');
+              core.warning('Owner action required: enable Pages in civic-newsroom Settings > Pages with GitHub Actions as source. Artifact is built, not live.');
+            }
   deploy:
     needs: build
+    if: ${{ needs.build.outputs.pages_ready == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -79,18 +88,22 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify public application revision
+      - name: Verify public release and static record text
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           python3 - <<'PY'
           import json,os,time,urllib.request
+          base=os.environ['SITE_URL'].rstrip('/')+'/'
           for attempt in range(6):
               try:
-                  with urllib.request.urlopen(os.environ['SITE_URL'].rstrip('/')+'/data/boot.json?revision='+os.environ['GITHUB_SHA'],timeout=30) as r:
-                      data=json.load(r)
-                  assert data['app_revision']==os.environ['GITHUB_SHA']
-                  assert data['records']>0
+                  def read(path):
+                      with urllib.request.urlopen(base+path+'?revision='+os.environ['GITHUB_SHA'],timeout=30) as r:return r.read()
+                  data=json.loads(read('data/boot.json'));assert data['app_revision']==os.environ['GITHUB_SHA'] and data['records']>0
+                  readiness=json.loads(read('data/search-readiness.json'));assert readiness['static_record_pages']==data['records']
+                  first=json.loads(read('data/records.json'))[0]['id']
+                  assert b'<pre>' in read('records/'+first+'/index.html')
+                  assert b'<urlset' in read('sitemap.xml')
                   break
               except Exception:
                   if attempt==5:raise
@@ -109,17 +122,16 @@ jobs:
         env:
           BUILD_RESULT: ${{ needs.build.result }}
           DEPLOY_RESULT: ${{ needs.deploy.result }}
+          PAGES_READY: ${{ needs.build.outputs.pages_ready }}
           SITE_URL: ${{ needs.deploy.outputs.url }}
         with:
           script: |
             const owner='bartimoussmith-oss',repo='civic-newsroom';
-            const jobs=await github.paginate(github.rest.actions.listJobsForWorkflowRun,{owner,repo,run_id:context.runId,per_page:100});
-            const failures=[];
+            const jobs=await github.paginate(github.rest.actions.listJobsForWorkflowRun,{owner,repo,run_id:context.runId,per_page:100});const failures=[];
             for(const j of jobs.filter(j=>j.conclusion==='failure')){
               const item={job:j.name,steps:(j.steps||[]).filter(s=>s.conclusion==='failure').map(s=>s.name),annotations:[]};
-              if(j.check_run_url){const check_run_id=Number(j.check_run_url.split('/').pop());const a=await github.paginate(github.rest.checks.listAnnotations,{owner,repo,check_run_id,per_page:100});item.annotations=a.slice(0,5).map(x=>({path:x.path,line:x.start_line,message:String(x.message||'').replace(/(?:github_pat_|ghp_)[A-Za-z0-9_]+/g,'[REDACTED]').slice(0,1000)}));}
-              failures.push(item);
+              if(j.check_run_url){const check_run_id=Number(j.check_run_url.split('/').pop());const a=await github.paginate(github.rest.checks.listAnnotations,{owner,repo,check_run_id,per_page:100});item.annotations=a.slice(0,10).map(x=>({path:x.path,line:x.start_line,message:String(x.message||'').replace(/(?:github_pat_|ghp_)[A-Za-z0-9_]+/g,'[REDACTED]').slice(0,1500)}));}failures.push(item);
             }
-            const report={schema:'newsroom-app-status-v1',revision:context.sha,run_id:context.runId,build:process.env.BUILD_RESULT,deploy:process.env.DEPLOY_RESULT,url:process.env.SITE_URL||null,checked_at:new Date().toISOString(),failures};
+            const report={schema:'newsroom-app-status-v2',revision:context.sha,run_id:context.runId,build:process.env.BUILD_RESULT,deploy:process.env.DEPLOY_RESULT,pages_setup_required:process.env.PAGES_READY==='false',url:process.env.SITE_URL||null,google_indexing_verified:false,google_ai_mode_inclusion_verified:false,checked_at:new Date().toISOString(),failures};
             const path='status/app.json';let old;try{old=await github.rest.repos.getContent({owner,repo,path,ref:'main'});}catch(e){if(e.status!==404)throw e;}
-            await github.rest.repos.createOrUpdateFileContents({owner,repo,path,branch:'main',message:'status: newsroom app run '+context.runId,content:Buffer.from(JSON.stringify(report,null,2)).toString('base64'),...(old?{sha:old.data.sha}:{})});
+            await github.rest.repos.createOrUpdateFileContents({owner,repo,path,branch:'main',message:'status: archive release '+context.runId,content:Buffer.from(JSON.stringify(report,null,2)).toString('base64'),...(old?{sha:old.data.sha}:{})});
