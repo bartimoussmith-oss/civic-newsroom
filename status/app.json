@@ -1,11 +1,11 @@
 {
   "schema": "newsroom-app-status-v1",
-  "revision": "e03fcfe2e08c61cc6d1915d986db37fd249b10ac",
-  "run_id": 40280170152,
+  "revision": "ed7b233d5a94dc7976e78332e2b8fccaa9deb411",
+  "run_id": 40289679914,
   "build": "failure",
   "deploy": "skipped",
   "url": null,
-  "checked_at": "2026-10-26T06:31:28.768Z",
+  "checked_at": "2026-10-26T08:05:47.163Z",
   "failures": [
     {
       "job": "build",
