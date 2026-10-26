@@ -2,11 +2,36 @@
   "schema": "intelligence-build-review-v1",
   "run_id": 40293851464,
   "revision": "18efc5218131792fb311493d4678b700c4d8d71a",
-  "status": "in_progress",
-  "conclusion": null,
+  "status": "completed",
+  "conclusion": "failure",
   "run_url": "https://github.com/bartimoussmith-oss/civic-newsroom/actions/runs/40293851464",
-  "checked_at": "2026-10-26T08:40:10.527Z",
+  "checked_at": "2026-10-26T08:42:44.785Z",
   "publication": null,
-  "failures": [],
+  "failures": [
+    {
+      "job": "build",
+      "url": "https://github.com/bartimoussmith-oss/civic-newsroom/actions/runs/40293851464/job/121475024707",
+      "steps": [
+        "Build, package and verify real-corpus intelligence"
+      ],
+      "annotations": [
+        {
+          "path": ".github",
+          "line": 2,
+          "message": "Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/"
+        },
+        {
+          "path": ".github",
+          "line": 26,
+          "message": "Process completed with exit code 1."
+        },
+        {
+          "path": ".github",
+          "line": 1,
+          "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\""
+        }
+      ]
+    }
+  ],
   "browser_scope": "Syntax check only; not a browser interaction or factual accuracy certification"
 }
