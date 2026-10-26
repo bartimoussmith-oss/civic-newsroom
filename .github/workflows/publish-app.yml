@@ -2,7 +2,7 @@ name: publish-app
 on:
   push:
     branches: [main]
-    paths: ["app/**", "web/**", ".github/workflows/publish-app.yml"]
+    paths: ["app/**", "web/**", "intelligence-publication.json", ".github/workflows/publish-app.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 35
     outputs:
       pages_ready: ${{ steps.pages.outputs.ready }}
+      intelligence_verified: ${{ steps.integration.outcome }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,18 +39,22 @@ jobs:
         run: |
           node --check web/app.js
           node --check web/intelligence-tools.js
+          node --check app/intelligence-smoke.cjs
           python -m py_compile app/build_site.py app/search_pages.py app/build_release.py
           python app/build_release.py --dataset-repo source-data --out _site --revision "$GITHUB_SHA"
+          cp intelligence-publication.json _site/intelligence-publication.json
       - name: Install browser test runtime
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Verify interactive media export and static record text
+      - name: Verify media export, static records and intelligence integration
+        id: integration
         run: |
           python -m http.server 8765 --directory _site > /tmp/newsroom-http.log 2>&1 &
           node app/browser-smoke.cjs > browser-result.json
           node app/static-smoke.cjs > static-result.json
-          cat browser-result.json static-result.json
+          node app/intelligence-smoke.cjs > intelligence-browser-result.json
+          cat browser-result.json static-result.json intelligence-browser-result.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -57,6 +62,7 @@ jobs:
           path: |
             browser-result.json
             static-result.json
+            intelligence-browser-result.json
             _site/data/boot.json
             _site/data/search-readiness.json
           retention-days: 7
@@ -80,11 +86,13 @@ jobs:
     needs: build
     if: ${{ needs.build.outputs.pages_ready == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     outputs:
       url: ${{ steps.deployment.outputs.page_url }}
+      intelligence_verified: ${{ steps.live.outcome }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
@@ -104,11 +112,35 @@ jobs:
                   first=json.loads(read('data/records.json'))[0]['id']
                   assert b'<pre>' in read('records/'+first+'/index.html')
                   assert b'<urlset' in read('sitemap.xml')
+                  pointer=json.loads(read('intelligence-publication.json'))
+                  assert pointer['revision']=='5a32d3f5e99bce745898f47673db7dc2ffb16207'
+                  assert pointer['collection_sha256']=='3518b46f93db40b6e22c5bd41883fb823be026fe386f4f52eb58a35d22ca3f6c'
                   break
               except Exception:
                   if attempt==5:raise
                   time.sleep(15)
           PY
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install deployed-browser verification runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify deployed intelligence workbench
+        id: live
+        env:
+          INTELLIGENCE_TEST_BASE: ${{ steps.deployment.outputs.page_url }}
+        run: node app/intelligence-smoke.cjs > deployed-intelligence-result.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployed-intelligence-verification-${{ github.sha }}
+          path: deployed-intelligence-result.json
+          retention-days: 7
   report:
     needs: [build,deploy]
     if: always()
@@ -124,6 +156,8 @@ jobs:
           DEPLOY_RESULT: ${{ needs.deploy.result }}
           PAGES_READY: ${{ needs.build.outputs.pages_ready }}
           SITE_URL: ${{ needs.deploy.outputs.url }}
+          INTELLIGENCE_BUILD_TEST: ${{ needs.build.outputs.intelligence_verified }}
+          INTELLIGENCE_LIVE_TEST: ${{ needs.deploy.outputs.intelligence_verified }}
         with:
           script: |
             const owner='bartimoussmith-oss',repo='civic-newsroom';
@@ -132,6 +166,6 @@ jobs:
               const item={job:j.name,steps:(j.steps||[]).filter(s=>s.conclusion==='failure').map(s=>s.name),annotations:[]};
               if(j.check_run_url){const check_run_id=Number(j.check_run_url.split('/').pop());const a=await github.paginate(github.rest.checks.listAnnotations,{owner,repo,check_run_id,per_page:100});item.annotations=a.slice(0,10).map(x=>({path:x.path,line:x.start_line,message:String(x.message||'').replace(/(?:github_pat_|ghp_)[A-Za-z0-9_]+/g,'[REDACTED]').slice(0,1500)}));}failures.push(item);
             }
-            const report={schema:'newsroom-app-status-v2',revision:context.sha,run_id:context.runId,build:process.env.BUILD_RESULT,deploy:process.env.DEPLOY_RESULT,pages_setup_required:process.env.PAGES_READY==='false',url:process.env.SITE_URL||null,google_indexing_verified:false,google_ai_mode_inclusion_verified:false,checked_at:new Date().toISOString(),failures};
+            const report={schema:'newsroom-app-status-v3',revision:context.sha,run_id:context.runId,build:process.env.BUILD_RESULT,deploy:process.env.DEPLOY_RESULT,pages_setup_required:process.env.PAGES_READY==='false',url:process.env.SITE_URL||null,intelligence_data_revision:'5a32d3f5e99bce745898f47673db7dc2ffb16207',intelligence_build_browser_test:process.env.INTELLIGENCE_BUILD_TEST,intelligence_deployed_browser_test:process.env.INTELLIGENCE_LIVE_TEST,google_indexing_verified:false,google_ai_mode_inclusion_verified:false,checked_at:new Date().toISOString(),failures};
             const path='status/app.json';let old;try{old=await github.rest.repos.getContent({owner,repo,path,ref:'main'});}catch(e){if(e.status!==404)throw e;}
-            await github.rest.repos.createOrUpdateFileContents({owner,repo,path,branch:'main',message:'status: archive release '+context.runId,content:Buffer.from(JSON.stringify(report,null,2)).toString('base64'),...(old?{sha:old.data.sha}:{})});
+            await github.rest.repos.createOrUpdateFileContents({owner,repo,path,branch:'main',message:'status: integrated archive release '+context.runId,content:Buffer.from(JSON.stringify(report,null,2)).toString('base64'),...(old?{sha:old.data.sha}:{})});
