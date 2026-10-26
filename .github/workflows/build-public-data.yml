@@ -1,0 +1,63 @@
+name: build-public-data
+on:
+  push:
+    branches: [main]
+    paths: ["scripts/**", ".github/workflows/build-public-data.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test normalized data partitioning
+        run: python -m unittest discover -s scripts -p 'test_build_data.py' -v
+      - name: Read pinned tested extraction implementation
+        uses: actions/checkout@v4
+        with:
+          repository: bartimoussmith-oss/therealwindycity
+          ref: 357b032ad2881cf25b5a4ca8e5609947521a977f
+          path: upstream
+          persist-credentials: false
+      - name: Install extraction dependencies
+        run: pip install pymupdf beautifulsoup4 markdown wordninja
+      - name: Read public meeting index and transcript archives
+        run: |
+          git clone --depth 1 https://github.com/therealwindycity/TheReelWindyCity.git /tmp/fe
+          (cd /tmp/fe && node scripts/build-data.mjs)
+          git clone --depth 1 https://github.com/therealwindycity/The-Real-Windy-City-.git /tmp/tr
+      - name: Extract six public archive repositories without upstream writes
+        working-directory: upstream
+        run: python tools/ai_record_extract.py --text /tmp/text --trees /tmp/trees
+      - name: Build public text mirror using existing extraction and OCR cache
+        working-directory: upstream
+        run: |
+          python tools/build_ai_record.py --meetings /tmp/fe/src/data/meetings.json --text /tmp/text --ocr ai-record-ocr --transcripts /tmp/tr --minutes pipeline/corpus --trees /tmp/trees --drive-db drive-import/master_meetings_database.json.gz --out /tmp/approved-mirror
+      - name: Record additional source snapshot evidence
+        run: |
+          mkdir -p output
+          git -C /tmp/fe rev-parse HEAD > output/frontend-source-revision.txt
+          git -C /tmp/tr rev-parse HEAD > output/transcript-source-revision.txt
+          cp /tmp/trees/tree_*.json output/
+      - name: Normalize and partition complete public representations
+        run: python scripts/build_data.py --mirror /tmp/approved-mirror --out output/dataset --producer-revision 357b032ad2881cf25b5a4ca8e5609947521a977f --approved-public
+      - name: Preserve collection manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: collection-manifest-${{ github.sha }}
+          path: output/dataset/collection.json
+          retention-days: 7
+      - name: Preserve normalized public data for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: normalized-public-data-${{ github.sha }}
+          path: output
+          retention-days: 7
