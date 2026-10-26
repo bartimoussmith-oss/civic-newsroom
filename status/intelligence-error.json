@@ -1,21 +1,21 @@
 {
-  "schema": "intelligence-terminal-error-v1",
-  "run_id": 40286406710,
-  "revision": "f9a9a8e4ea112b965bec8b63a1e50f1b7cb3b462",
+  "schema": "intelligence-terminal-error-v2",
+  "run_id": 40293851464,
+  "revision": "18efc5218131792fb311493d4678b700c4d8d71a",
   "conclusion": "failure",
-  "checked_at": "2026-10-26T08:27:29.258Z",
+  "checked_at": "2026-10-26T09:47:51.424Z",
   "failures": [
     {
       "job": "build",
-      "job_id": 121450997806,
+      "job_id": 121475024707,
       "failed_steps": [
-        "Build and verify real-corpus intelligence outputs"
+        "Build, package and verify real-corpus intelligence"
       ],
       "exception_lines": [
-        "ValueError: Intelligence file needs further partitioning"
+        "ValueError: Packed intelligence needs additional approved host: 493607874 bytes; largest files [(41943040, 'parts/e34c446696c5bd4c762d4354969092070b1768d7646145aa9495ef5dc3cc0c17.part'), (41943040, 'database-0004.part'), (41943040, 'database-0003.part'), (41943040, 'database-0002.part'), (41943040, 'database-0001.part')]"
       ],
       "diagnostic_status": "exception_lines_retrieved"
     }
   ],
-  "note": "Bounded terminal exception lines only; no raw logs or source-record content. Root cause must be checked against code before repair."
+  "note": "Bounded terminal exception lines only; no raw logs. A passing diagnostic is not a successful intelligence build."
 }
