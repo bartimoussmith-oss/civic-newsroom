@@ -1,7 +1,7 @@
 {
   "schema": "newsroom-app-status-v3",
-  "revision": "8b46d28c568ac682ec0d64bbd23937bc8bb07ebf",
-  "run_id": 40368577134,
+  "revision": "4215370d9b5f083c192f090994d0b45da0f79dba",
+  "run_id": 40369195796,
   "build": "success",
   "deploy": "success",
   "pages_setup_required": false,
@@ -11,6 +11,6 @@
   "intelligence_deployed_browser_test": "success",
   "google_indexing_verified": false,
   "google_ai_mode_inclusion_verified": false,
-  "checked_at": "2026-10-26T17:30:05.525Z",
+  "checked_at": "2026-10-26T17:34:01.477Z",
   "failures": []
 }
