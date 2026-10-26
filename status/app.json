@@ -1,13 +1,13 @@
 {
   "schema": "newsroom-app-status-v2",
-  "revision": "18efc5218131792fb311493d4678b700c4d8d71a",
-  "run_id": 40293851366,
+  "revision": "47826216e8a4e3b5b74a5851bcf262966f177ef0",
+  "run_id": 40309887771,
   "build": "success",
-  "deploy": "skipped",
-  "pages_setup_required": true,
-  "url": null,
+  "deploy": "success",
+  "pages_setup_required": false,
+  "url": "https://bartimoussmith-oss.github.io/civic-newsroom/",
   "google_indexing_verified": false,
   "google_ai_mode_inclusion_verified": false,
-  "checked_at": "2026-10-26T08:42:04.551Z",
+  "checked_at": "2026-10-26T11:01:25.242Z",
   "failures": []
 }
