@@ -5,8 +5,22 @@
   "status": "completed",
   "conclusion": "failure",
   "run_url": "https://github.com/bartimoussmith-oss/civic-newsroom/actions/runs/40293851464",
-  "checked_at": "2026-10-26T08:42:44.785Z",
-  "publication": null,
+  "checked_at": "2026-10-26T13:17:58.672Z",
+  "publication": {
+    "schema": "civic-intelligence-publication-v1",
+    "data_repository": "bartimoussmith-oss/civic-newsroom-intelligence-001",
+    "revision": "5a32d3f5e99bce745898f47673db7dc2ffb16207",
+    "base_url": "https://raw.githubusercontent.com/bartimoussmith-oss/civic-newsroom-intelligence-001/5a32d3f5e99bce745898f47673db7dc2ffb16207/data/run-40311484101-1/",
+    "collection_sha256": "3518b46f93db40b6e22c5bd41883fb823be026fe386f4f52eb58a35d22ca3f6c",
+    "records": 6065,
+    "passages": 432020,
+    "reference_mentions": 7916,
+    "language_candidates": 867452,
+    "verified_entity_resolution": false,
+    "source_independence": "unresolved",
+    "workflow_run": "40311484101",
+    "stored_bytes": 493608460
+  },
   "failures": [
     {
       "job": "build",
