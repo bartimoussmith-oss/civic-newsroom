@@ -1,0 +1,21 @@
+{
+  "schema": "intelligence-terminal-error-v1",
+  "run_id": 40286406710,
+  "revision": "f9a9a8e4ea112b965bec8b63a1e50f1b7cb3b462",
+  "conclusion": "failure",
+  "checked_at": "2026-10-26T08:27:29.258Z",
+  "failures": [
+    {
+      "job": "build",
+      "job_id": 121450997806,
+      "failed_steps": [
+        "Build and verify real-corpus intelligence outputs"
+      ],
+      "exception_lines": [
+        "ValueError: Intelligence file needs further partitioning"
+      ],
+      "diagnostic_status": "exception_lines_retrieved"
+    }
+  ],
+  "note": "Bounded terminal exception lines only; no raw logs or source-record content. Root cause must be checked against code before repair."
+}
