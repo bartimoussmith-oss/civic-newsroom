@@ -1,0 +1,177 @@
+{
+  "schema": "newsroom-build-report-v1",
+  "repository": "bartimoussmith-oss/civic-newsroom",
+  "run_id": 40277501462,
+  "revision": "9acdd31e2e548915d5273adf06ad59daddaddc62",
+  "status": "completed",
+  "conclusion": "success",
+  "run_url": "https://github.com/bartimoussmith-oss/civic-newsroom/actions/runs/40277501462",
+  "checked_at": "2026-10-26T06:13:56.743Z",
+  "dataset": {
+    "schema": "civic-data-collection-v1",
+    "producer_revision": "357b032ad2881cf25b5a4ca8e5609947521a977f",
+    "records": 6065,
+    "input_representation_bytes": 168959761,
+    "stored_unique_blob_bytes": 168959761,
+    "unique_blobs": 6065,
+    "excluded_count": 240,
+    "full_historical_coverage": false,
+    "data_hosts": [],
+    "catalogs": [
+      {
+        "path": "catalog-0001.json",
+        "bytes": 248928,
+        "records": 256,
+        "sha256": "8946906083da71ef2069e52fdd778c50597d7195a972884e712af21d6a4d61d1"
+      },
+      {
+        "path": "catalog-0002.json",
+        "bytes": 248774,
+        "records": 256,
+        "sha256": "b2e4e87f90ff17776bec0d61836c534429cf05701f6fc4ba4598778b01e15d59"
+      },
+      {
+        "path": "catalog-0003.json",
+        "bytes": 249827,
+        "records": 256,
+        "sha256": "bb1efa79b0ae035e9134ac6ababf11af2ee51124bbb81b515e3c698fd0df1e38"
+      },
+      {
+        "path": "catalog-0004.json",
+        "bytes": 249728,
+        "records": 256,
+        "sha256": "ccd578715779c07859059ca22f624ba2adf3eb11b629ae39473001f85ee098c3"
+      },
+      {
+        "path": "catalog-0005.json",
+        "bytes": 248155,
+        "records": 256,
+        "sha256": "6a48a5ddc35b4e3dd2574e8bc9bcb28a848bb6af5a6a060bffeebf6edb4e413f"
+      },
+      {
+        "path": "catalog-0006.json",
+        "bytes": 247865,
+        "records": 256,
+        "sha256": "39820527bcd28e53324648c6463ec5e0f7cb1af505fd275ab2c03ba84ba67006"
+      },
+      {
+        "path": "catalog-0007.json",
+        "bytes": 247441,
+        "records": 256,
+        "sha256": "7866ca1dfd6f7d5d5e70dfdd2ef15533fd7817f0cd4a424196239775bd1dcded"
+      },
+      {
+        "path": "catalog-0008.json",
+        "bytes": 249266,
+        "records": 256,
+        "sha256": "4389b7740bb9b5a106b467043d934861884dd572ce4275ead6b8c22082d84577"
+      },
+      {
+        "path": "catalog-0009.json",
+        "bytes": 247638,
+        "records": 256,
+        "sha256": "10a5bfb4f954e44bfc1db09b4978c9cc1c40b8a956bce57032e2985cb4d55c08"
+      },
+      {
+        "path": "catalog-0010.json",
+        "bytes": 247675,
+        "records": 256,
+        "sha256": "3bf9d2b49859698d43a6e5647135d4a39dd03d0c0e5a8977dafab536b5305008"
+      },
+      {
+        "path": "catalog-0011.json",
+        "bytes": 248130,
+        "records": 256,
+        "sha256": "af5b7887442a1320809a6e59b6c2f4860d4b8b62f967f26f7e98d10a1725bf56"
+      },
+      {
+        "path": "catalog-0012.json",
+        "bytes": 247788,
+        "records": 256,
+        "sha256": "882b98fe0a45e4d7b0c200665a95903a46c543487749dc179c080533d9f4d1f6"
+      },
+      {
+        "path": "catalog-0013.json",
+        "bytes": 250430,
+        "records": 256,
+        "sha256": "de798595a7462354169bfaf8d1cd16dd8e4cd04f813ec7b8a2d95ffb95d6a872"
+      },
+      {
+        "path": "catalog-0014.json",
+        "bytes": 247330,
+        "records": 256,
+        "sha256": "786b02b378977ebee1af2524e2f8cb542788edd48565d04963bc00c1e746680e"
+      },
+      {
+        "path": "catalog-0015.json",
+        "bytes": 247664,
+        "records": 256,
+        "sha256": "5ee7c1f80f9ad218d878bfd9dd5ef10f66f4e37bdc52f6313c541c518faca2cb"
+      },
+      {
+        "path": "catalog-0016.json",
+        "bytes": 246720,
+        "records": 256,
+        "sha256": "a22e9ee68b123b99bbcb3dfbee40b0fc616ff828fbf8d36109705572aa59cc8e"
+      },
+      {
+        "path": "catalog-0017.json",
+        "bytes": 247653,
+        "records": 256,
+        "sha256": "25906344138095d802f7f4cdf1085f431bbc891f7cef71a0d2bf4159c0b87d2f"
+      },
+      {
+        "path": "catalog-0018.json",
+        "bytes": 248870,
+        "records": 256,
+        "sha256": "d24c81a06b5b4129f7c59199174ac17c5aeb9b41a906b24244e7adc3bcca0fcd"
+      },
+      {
+        "path": "catalog-0019.json",
+        "bytes": 250919,
+        "records": 256,
+        "sha256": "8b2d3db720a685cda3cd6c19b9868128362299aadd35730eda917725f9c69f8b"
+      },
+      {
+        "path": "catalog-0020.json",
+        "bytes": 252448,
+        "records": 256,
+        "sha256": "7713091e91df0c1cf5b67c075d7be74d9ef9acb4d05a892ea13fa7fc7bce78f3"
+      },
+      {
+        "path": "catalog-0021.json",
+        "bytes": 244547,
+        "records": 256,
+        "sha256": "c6c99ee248740a0688cef9fc0a9af4142c0a65281571ce567b3e828c53f8dedc"
+      },
+      {
+        "path": "catalog-0022.json",
+        "bytes": 248501,
+        "records": 256,
+        "sha256": "19c562e4ccafec6a47cfca538f336478a79ccb94fa6ad242f562dfc3e8abe590"
+      },
+      {
+        "path": "catalog-0023.json",
+        "bytes": 248401,
+        "records": 256,
+        "sha256": "858ad645f19363b0101ea5353150ec7d85ec870fb50d89e0d20ee1e8e5b333ca"
+      },
+      {
+        "path": "catalog-0024.json",
+        "bytes": 171896,
+        "records": 177,
+        "sha256": "750861107f60d8ce7cdec3c77f473f172f21924b3186d522f34f8cabe7e61355"
+      }
+    ],
+    "partitions": [
+      {
+        "id": "partition-001",
+        "payload_bytes": 168959761,
+        "total_bytes": 168959827,
+        "blob_count": 6065
+      }
+    ]
+  },
+  "failed_steps": [],
+  "publication_status": "not_established_by_build_report"
+}
