@@ -17,6 +17,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - uses: actions/checkout@v4
         with:
           repository: bartimoussmith-oss/civic-newsroom-data-001
@@ -26,44 +29,50 @@ jobs:
           sparse-checkout: |
             /published.json
             /datasets/
-      - name: Test evidence engine
-        run: python -m unittest discover -s intelligence -p 'test_engine.py' -v
-      - name: Build and verify real-corpus intelligence outputs
+      - name: Test retrieval and lossless file reconstruction
         run: |
-          python intelligence/engine.py build --dataset-repo source-data --out /tmp/intelligence --revision "$GITHUB_SHA" > intelligence-result.json
+          python -m unittest discover -s intelligence -p 'test_*.py' -v
+          node --check web/intelligence-tools.js
+      - name: Build, package and verify real-corpus intelligence
+        run: |
+          python intelligence/file_parts.py --dataset-repo source-data --out /tmp/intelligence --revision "$GITHUB_SHA" > intelligence-result.json
           python intelligence/engine.py search --db /tmp/intelligence/intelligence.sqlite --query annexation --limit 3 > retrieval-test.json
           python - <<'PY'
           import json,subprocess,sys
-          rows=json.load(open('retrieval-test.json'))
-          assert len(rows)>0
+          rows=json.load(open('retrieval-test.json'));assert rows
           subprocess.run([sys.executable,'intelligence/engine.py','packet','--db','/tmp/intelligence/intelligence.sqlite','--passage-id',rows[0]['passage_id']],check=True,stdout=open('evidence-test.json','w'))
           PY
-      - name: Preserve verification results
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: intelligence-verification-${{ github.sha }}
           path: |
             intelligence-result.json
             retrieval-test.json
             evidence-test.json
+            /tmp/intelligence/public/collection.json
           retention-days: 7
-      - name: Publish bounded derived intelligence outputs in this repository only
+      - name: Publish bounded derived outputs without changing source records
         run: |
           python - <<'PY'
           import hashlib,json,os,pathlib,shutil,subprocess
           assert os.environ['GITHUB_REPOSITORY']=='bartimoussmith-oss/civic-newsroom'
           run=os.environ['GITHUB_RUN_ID'];assert run.isdigit()
-          destination=pathlib.Path('intelligence-data')/('run-'+run)
-          assert not destination.exists()
+          destination=pathlib.Path('intelligence-data')/('run-'+run);assert not destination.exists()
           existing=sum(p.stat().st_size for p in pathlib.Path('intelligence-data').rglob('*') if p.is_file()) if pathlib.Path('intelligence-data').exists() else 0
           incoming=sum(p.stat().st_size for p in pathlib.Path('/tmp/intelligence/public').rglob('*') if p.is_file())
-          assert existing+incoming<=256*1024*1024,'Derived repository budget exceeded; allocate a reviewed data host'
+          assert existing+incoming<=256*1024*1024,'Derived output needs an additional approved data host'
           shutil.copytree('/tmp/intelligence/public',destination)
           def git(*args):return subprocess.check_output(['git',*args],text=True).strip()
           git('config','user.name','github-actions[bot]');git('config','user.email','41898282+github-actions[bot]@users.noreply.github.com')
-          git('add',str(destination));git('commit','-m','data: source-linked intelligence run '+run)
+          git('add',str(destination));git('commit','-m','data: losslessly packaged intelligence '+run)
           revision=git('rev-parse','HEAD');raw=(destination/'collection.json').read_bytes();summary=json.loads(raw)
           pointer={'schema':'civic-intelligence-publication-v1','revision':revision,'base_url':'https://raw.githubusercontent.com/bartimoussmith-oss/civic-newsroom/'+revision+'/'+destination.as_posix()+'/','collection_sha256':hashlib.sha256(raw).hexdigest(),'records':summary['records'],'passages':summary['passages'],'reference_mentions':summary['reference_mentions'],'language_candidates':summary['language_candidates'],'verified_entity_resolution':False,'source_independence':'unresolved','workflow_run':run}
-          pathlib.Path('intelligence-publication.json').write_text(json.dumps(pointer,indent=2))
-          git('add','intelligence-publication.json');git('commit','-m','publish: pin derived intelligence '+revision);git('push','origin','HEAD:main')
+          pathlib.Path('intelligence-publication.json').write_text(json.dumps(pointer,indent=2));git('add','intelligence-publication.json');git('commit','-m','publish: pin packaged intelligence '+revision)
+          for attempt in range(3):
+              git('fetch','origin','main')
+              git('merge','--no-edit','origin/main')
+              result=subprocess.run(['git','push','origin','HEAD:main'])
+              if result.returncode==0:break
+          else:raise SystemExit('Publication could not fast-forward after bounded retries')
           PY
