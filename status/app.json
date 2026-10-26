@@ -1,44 +1,13 @@
 {
-  "schema": "newsroom-app-status-v1",
-  "revision": "ed7b233d5a94dc7976e78332e2b8fccaa9deb411",
-  "run_id": 40289679914,
-  "build": "failure",
+  "schema": "newsroom-app-status-v2",
+  "revision": "07aece9e88af270e9b11770cc39bdbc29988299e",
+  "run_id": 40290647503,
+  "build": "success",
   "deploy": "skipped",
+  "pages_setup_required": true,
   "url": null,
-  "checked_at": "2026-10-26T08:05:47.163Z",
-  "failures": [
-    {
-      "job": "build",
-      "steps": [
-        "Run actions/configure-pages@v5"
-      ],
-      "annotations": [
-        {
-          "path": ".github",
-          "line": 3,
-          "message": "Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/configure-pages@v5, actions/setup-node@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/"
-        },
-        {
-          "path": ".github",
-          "line": 15,
-          "message": "HttpError: Resource not accessible by integration - https://docs.github.com/rest/pages/pages#create-a-apiname-pages-site"
-        },
-        {
-          "path": "/home/runner/work/_actions/actions/configure-pages/v5/node_modules/@octokit/request/dist-node/index.js",
-          "line": 124,
-          "message": "Create Pages site failed. Error: Resource not accessible by integration - https://docs.github.com/rest/pages/pages#create-a-apiname-pages-site"
-        },
-        {
-          "path": "/home/runner/work/_actions/actions/configure-pages/v5/node_modules/@octokit/request/dist-node/index.js",
-          "line": 124,
-          "message": "Get Pages site failed. Error: Not Found - https://docs.github.com/rest/pages/pages#get-a-apiname-pages-site"
-        },
-        {
-          "path": ".github",
-          "line": 1,
-          "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\""
-        }
-      ]
-    }
-  ]
+  "google_indexing_verified": false,
+  "google_ai_mode_inclusion_verified": false,
+  "checked_at": "2026-10-26T08:13:58.710Z",
+  "failures": []
 }
